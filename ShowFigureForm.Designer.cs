@@ -43,8 +43,9 @@
             this.openGLControlFigure.RenderTrigger = SharpGL.RenderTrigger.TimerBased;
             this.openGLControlFigure.Size = new System.Drawing.Size(800, 450);
             this.openGLControlFigure.TabIndex = 0;
-            this.openGLControlFigure.OpenGLDraw += new SharpGL.RenderEventHandler(this.openGLControlFigure_OpenGLDraw);
-            this.openGLControlFigure.Load += new System.EventHandler(this.openGLControlFigure_Load);
+            this.openGLControlFigure.OpenGLDraw += new SharpGL.RenderEventHandler(this.OpenGLControlFigure_OnOpenGLDraw);
+            this.openGLControlFigure.Load += new System.EventHandler(this.OpenGLControlFigure_OnLoad);
+            this.openGLControlFigure.PreviewKeyDown += new System.Windows.Forms.PreviewKeyDownEventHandler(this.OpenGLControlFigure_OnPreviewKeyDown);
             // 
             // ShowFigureForm
             // 

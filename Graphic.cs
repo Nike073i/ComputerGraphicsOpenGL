@@ -14,7 +14,6 @@ namespace ComputerGraphicsOpenGL
             _openGl = openGl;
         }
 
-
         public void DrawAxes(Color clrXAxis, Color clrYAxis, Color clrZAxis)
         {
             // Отрисовка оси X

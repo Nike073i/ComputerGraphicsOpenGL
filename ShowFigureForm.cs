@@ -8,34 +8,41 @@ namespace ComputerGraphicsOpenGL
 {
     public partial class ShowFigureForm : Form
     {
+        private readonly double _camR = 10;
+        private readonly double _degToRads = 0.0174533;
+        private readonly double _camAngleStep = 3.0;
+
         private readonly OpenGL _openGl;
         private readonly Graphic _graphic;
+        private readonly FigureGraphic _figure;
+
+        private double _camAngle = 28;
+        private double _camX;
+        private double _camZ;
+
         public ShowFigureForm()
         {
             InitializeComponent();
             _openGl = openGLControlFigure.OpenGL;
             _graphic = new Graphic(_openGl);
+            _figure = new FigureGraphic(_graphic);
+            _camZ = Math.Sin(_camAngle * _degToRads) * _camR;
+            _camX = Math.Cos(_camAngle * _degToRads) * _camR;
         }
 
-
-        private void openGLControlFigure_OpenGLDraw(object sender, RenderEventArgs args)
+        private void OpenGLControlFigure_OnOpenGLDraw(object sender, RenderEventArgs args)
         {
             _graphic.DrawAxes(Color.Red, Color.Yellow, Color.Blue);
-
-            _graphic.DrawTriangle(Color.Violet, new Point3D(0, 2.5, 0), new Point3D(0, 2.5, 2.5), new Point3D(0.5, 5, 1.25));
-            _graphic.DrawPolygon(Color.Violet, new Point3D(0, 0, 2.5), 
-                new Point3D(5, 0, 2.5), new Point3D(5, 2.5, 2.5), new Point3D(0, 2.5, 2.5));
+            _figure.Draw();
         }
 
-        private void openGLControlFigure_Load(object sender, EventArgs e)
+        private void OpenGLControlFigure_OnLoad(object sender, EventArgs e)
         {
             _openGl.MatrixMode(OpenGL.GL_PROJECTION);
             _openGl.LoadIdentity();
-            // Угол обзора, соотношение экрана, Расстояние до А, до B
             _openGl.Perspective(90, 16 / 9, 0.1, 200);
-
-            // Положение камеры x,y,z, Точка направления x,y,z, Поворот "Головы" x,y,z
-            _openGl.LookAt(10, 10, 10, 0, 1, 0, 0, 1, 0);
+            //_openGl.LookAt(10, 10, 5, 0, 1, 0, 0, 1, 0);
+            _openGl.LookAt(_camX, 10, _camZ, 0, 0, 0, 0, 1, 0);
             _openGl.MatrixMode(OpenGL.GL_MODELVIEW);
             _openGl.LoadIdentity();
 
@@ -44,6 +51,27 @@ namespace ComputerGraphicsOpenGL
 
             // подготавливаем сцену для вывода изображений(очищаем ее)
             _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+        }
+
+        private void RotateCamera(DirectionRotate direction)
+        {
+            _camAngle -= _camAngleStep * Convert.ToInt32(direction); ;
+            _camX = _camR * Math.Cos(_camAngle * _degToRads);
+            _camZ = _camR * Math.Sin(_camAngle * _degToRads);
+        }
+
+        private void OpenGLControlFigure_OnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Right:
+                    RotateCamera(DirectionRotate.RIGHT);
+                    break;
+                case Keys.Left:
+                    RotateCamera(DirectionRotate.LEFT);
+                    break;
+            }
+            OpenGLControlFigure_OnLoad(sender, e);
         }
     }
 }

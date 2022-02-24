@@ -59,7 +59,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DirectionRotate.cs" />
+    <Compile Include="FigureGraphic.cs" />
     <Compile Include="Graphic.cs" />
+    <Compile Include="HouseGraphic.cs" />
     <Compile Include="Point3D.cs" />
     <Compile Include="ShowFigureForm.cs">
       <SubType>Form</SubType>
