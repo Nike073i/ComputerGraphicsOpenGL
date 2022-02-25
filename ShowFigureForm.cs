@@ -11,6 +11,7 @@ namespace ComputerGraphicsOpenGL
         private readonly double _camR = 10;
         private readonly double _degToRads = 0.0174533;
         private readonly double _camAngleStep = 3.0;
+        private readonly double _xStep = 1;
 
         private readonly OpenGL _openGl;
         private readonly Graphic _graphic;
@@ -36,7 +37,7 @@ namespace ComputerGraphicsOpenGL
             _figure.Draw();
         }
 
-        private void OpenGLControlFigure_OnLoad(object sender, EventArgs e)
+        private void LoadCamSetting()
         {
             _openGl.MatrixMode(OpenGL.GL_PROJECTION);
             _openGl.LoadIdentity();
@@ -53,11 +54,27 @@ namespace ComputerGraphicsOpenGL
             _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
         }
 
+        private void OpenGLControlFigure_OnLoad(object sender, EventArgs e)
+        {
+            LoadCamSetting();
+        }
+
         private void RotateCamera(DirectionRotate direction)
         {
             _camAngle -= _camAngleStep * Convert.ToInt32(direction); ;
             _camX = _camR * Math.Cos(_camAngle * _degToRads);
             _camZ = _camR * Math.Sin(_camAngle * _degToRads);
+            LoadCamSetting();
+        }
+
+        private void MoveFigure(DirectionRotate direction)
+        {
+            _figure.X += _xStep * Convert.ToInt32(direction);
+            // RGBA float
+            _openGl.ClearColor(0.1f, 1f, 0.3f, 1);
+
+            // подготавливаем сцену для вывода изображений(очищаем ее)
+            _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
         }
 
         private void OpenGLControlFigure_OnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
@@ -70,8 +87,13 @@ namespace ComputerGraphicsOpenGL
                 case Keys.Left:
                     RotateCamera(DirectionRotate.LEFT);
                     break;
+                case Keys.A:
+                    MoveFigure(DirectionRotate.LEFT);
+                    break;
+                case Keys.D:
+                    MoveFigure(DirectionRotate.RIGHT);
+                    break;
             }
-            OpenGLControlFigure_OnLoad(sender, e);
         }
     }
 }

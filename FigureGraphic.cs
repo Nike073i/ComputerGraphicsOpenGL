@@ -17,6 +17,12 @@ namespace ComputerGraphicsOpenGL
         public Color ClrSide4 { get; set; } = Color.MediumVioletRed;
         public Color ClrSide5 { get; set; } = Color.OrangeRed;
         public Color ClrSide6 { get; set; } = Color.PaleVioletRed;
+        public Color ClrSide7 { get; set; } = Color.Orange;
+        public Color ClrSide8 { get; set;} = Color.DarkGreen;
+        public Color ClrSide9 { get; set; } = Color.DarkKhaki;
+        public Color ClrSide10 { get; set; } = Color.DarkSeaGreen;
+        public Color ClrSide11 { get; set; } = Color.DarkTurquoise;
+
         #endregion properties
 
         public FigureGraphic(Graphic graphic)
@@ -43,14 +49,21 @@ namespace ComputerGraphicsOpenGL
 
             Point3D pointD = new Point3D(X, Y, Z + 1.5);
             Point3D pointK = new Point3D(X + 1.8, Y + 5.3, Z + 0.5);
+            Point3D pointO = new Point3D(X, Y, Z);
+            Point3D pointZ = new Point3D(X, Y + 7, Z);
 
             // Отрисовка переднего треугольника
             _graphic.DrawPolygon(ClrSide1, pointA, pointB, pointK, pointC);
-            _graphic.DrawTriangle(ClrSide2, pointB, pointE, pointF);
+            _graphic.DrawPolygon(ClrSide2, pointB, pointK, pointF, pointE);
             _graphic.DrawTriangle(ClrSide3, pointF, pointX, pointG);
             _graphic.DrawTriangle(ClrSide4, pointF, pointX, pointD);
             _graphic.DrawTriangle(ClrSide5, pointD, pointC, pointA);
-            _graphic.DrawPolygon(ClrSide6, pointD,pointK, pointG, pointX);
+            _graphic.DrawPolygon(ClrSide6, pointD, pointK, pointG, pointX);
+            _graphic.DrawPolygon(ClrSide7, pointA, pointB, pointO);
+            _graphic.DrawTriangle(ClrSide8, pointE, pointZ, pointF);
+            _graphic.DrawPolygon(ClrSide9, pointE, pointB, pointZ);
+            _graphic.DrawTriangle(ClrSide10, pointB, pointO, pointZ);
+            _graphic.DrawPolygon(ClrSide11, pointO, pointD, pointF, pointZ);
         }
     }
 }
