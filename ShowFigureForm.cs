@@ -42,15 +42,12 @@ namespace ComputerGraphicsOpenGL
             _openGl.MatrixMode(OpenGL.GL_PROJECTION);
             _openGl.LoadIdentity();
             _openGl.Perspective(90, 16 / 9, 0.1, 200);
-            //_openGl.LookAt(10, 10, 5, 0, 1, 0, 0, 1, 0);
+
             _openGl.LookAt(_camX, 10, _camZ, 0, 0, 0, 0, 1, 0);
             _openGl.MatrixMode(OpenGL.GL_MODELVIEW);
             _openGl.LoadIdentity();
 
-            // RGBA float
             _openGl.ClearColor(0.1f, 1f, 0.3f, 1);
-
-            // подготавливаем сцену для вывода изображений(очищаем ее)
             _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
         }
 
@@ -70,10 +67,7 @@ namespace ComputerGraphicsOpenGL
         private void MoveFigure(DirectionRotate direction)
         {
             _figure.X += _xStep * Convert.ToInt32(direction);
-            // RGBA float
             _openGl.ClearColor(0.1f, 1f, 0.3f, 1);
-
-            // подготавливаем сцену для вывода изображений(очищаем ее)
             _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
         }
 
