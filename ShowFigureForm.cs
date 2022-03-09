@@ -33,8 +33,11 @@ namespace ComputerGraphicsOpenGL
 
         private void OpenGLControlFigure_OnOpenGLDraw(object sender, RenderEventArgs args)
         {
+            _openGl.ClearColor(1f, 1, 1f, 1);
+            _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
             _graphic.DrawAxes(Color.Red, Color.Yellow, Color.Blue);
-            _figure.Draw();
+            //_figure.Draw();
+            _graphic.DrawSphere(Color.Red);
         }
 
         private void LoadCamSetting()
@@ -46,9 +49,6 @@ namespace ComputerGraphicsOpenGL
             _openGl.LookAt(_camX, 10, _camZ, 0, 0, 0, 0, 1, 0);
             _openGl.MatrixMode(OpenGL.GL_MODELVIEW);
             _openGl.LoadIdentity();
-
-            _openGl.ClearColor(0.1f, 1f, 0.3f, 1);
-            _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
         }
 
         private void OpenGLControlFigure_OnLoad(object sender, EventArgs e)

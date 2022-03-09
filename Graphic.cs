@@ -54,5 +54,24 @@ namespace ComputerGraphicsOpenGL
             }
             _openGl.End();
         }
+
+        public void DrawSphere(Color color)
+        {
+            var i = _openGl.NewQuadric();
+            _openGl.Color(color);
+            _openGl.QuadricDrawStyle(i, OpenGL.GLU_LINE);
+            //_openGl.Sphere(i, 5, 25, 25);
+            //сохранить матрицы
+            _openGl.PushMatrix();
+            //трансформация перемещения. Параметры: сдвиг по x,y,z
+            _openGl.Translate(0,0,0);
+            //трансформация поворота. Параметры: угол относительно x,y,z
+            //_openGl.Rotate(-45, 0, 0);
+            _openGl.Color(Color.Black); 
+            _openGl.QuadricDrawStyle(i, OpenGL.GLU_LINE);
+            _openGl.Sphere(i, 5,25, 25);
+            //восстановление состояний матриц до трансформаций
+            _openGl.PopMatrix();
+        }
     }
 }
