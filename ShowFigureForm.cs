@@ -37,7 +37,8 @@ namespace ComputerGraphicsOpenGL
             _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
             _graphic.DrawAxes(Color.Red, Color.Yellow, Color.Blue);
             //_figure.Draw();
-            _graphic.DrawSphere(Color.Red);
+            _graphic.DrawDumbbell(Color.Red,25);
+            _graphic.DrawText("test");
         }
 
         private void LoadCamSetting()

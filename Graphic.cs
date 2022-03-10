@@ -1,6 +1,9 @@
 ﻿using SharpGL;
 using SharpGL.SceneGraph;
+using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace ComputerGraphicsOpenGL
 {
@@ -55,23 +58,118 @@ namespace ComputerGraphicsOpenGL
             _openGl.End();
         }
 
-        public void DrawSphere(Color color)
+        public void DrawDumbbell(Color color, int numSegments)
         {
-            var i = _openGl.NewQuadric();
-            _openGl.Color(color);
-            _openGl.QuadricDrawStyle(i, OpenGL.GLU_LINE);
-            //_openGl.Sphere(i, 5, 25, 25);
-            //сохранить матрицы
+            DrawFillCircle(0, 0, 4, 4, numSegments, color);
+            DrawFillCircle(0, 0, 5, 3.5f, numSegments, color);
+            DrawFillCircle(0, 0, 6, 2.5f, numSegments, color);
+            DrawFillCircle(0, 0, 7, 1.5f, numSegments, color);
+
+            DrawFillCircle(0, 0, -4, 4, numSegments, color);
+            DrawFillCircle(0, 0, -5, 3.5f, numSegments, color);
+            DrawFillCircle(0, 0, -6, 2.5f, numSegments, color);
+            DrawFillCircle(0, 0, -6.7f, 1.5f, numSegments, color);
+
             _openGl.PushMatrix();
-            //трансформация перемещения. Параметры: сдвиг по x,y,z
-            _openGl.Translate(0,0,0);
-            //трансформация поворота. Параметры: угол относительно x,y,z
-            //_openGl.Rotate(-45, 0, 0);
-            _openGl.Color(Color.Black); 
-            _openGl.QuadricDrawStyle(i, OpenGL.GLU_LINE);
-            _openGl.Sphere(i, 5,25, 25);
-            //восстановление состояний матриц до трансформаций
+            DrawPartOfDumbbell(numSegments);
             _openGl.PopMatrix();
+            _openGl.PushMatrix();
+            _openGl.Rotate(0, -180, 0);
+            DrawPartOfDumbbell(numSegments);
+            _openGl.PopMatrix();
+
+            // Цвет лампы
+            float[] light0_diffuse3 = { 1f, 1f, 0f };
+            float[] light0_direction3 = { 4.0f, .0f, 4.0f, 1.0f };
+            _openGl.Enable(OpenGL.GL_LIGHTING);
+            _openGl.Enable(OpenGL.GL_LIGHT5);
+            _openGl.Light(OpenGL.GL_LIGHT5, OpenGL.GL_DIFFUSE, light0_diffuse3);
+            _openGl.Light(OpenGL.GL_LIGHT5, OpenGL.GL_POSITION, light0_direction3);
+        }
+
+        private void DrawPartOfDumbbell(int numSegments)
+        {
+            var pipeQuadric = _openGl.NewQuadric();
+            _openGl.QuadricDrawStyle(pipeQuadric, OpenGL.GLU_FILL);
+            _openGl.Cylinder(pipeQuadric, 1, 1, 4, numSegments, numSegments);
+            _openGl.Translate(0,0,4);
+            var largeDiskQuadric = _openGl.NewQuadric();
+            _openGl.QuadricDrawStyle(largeDiskQuadric, OpenGL.GLU_FILL);
+            _openGl.Cylinder(largeDiskQuadric, 4, 3.5, 1, numSegments, numSegments);
+
+            _openGl.Translate(0, 0, 1);
+            var mediumDiskQuadric = _openGl.NewQuadric();
+            _openGl.QuadricDrawStyle(mediumDiskQuadric, OpenGL.GLU_FILL);
+            _openGl.Cylinder(mediumDiskQuadric, 3, 2.5, 1, numSegments, numSegments);
+
+            _openGl.Translate(0, 0, 1);
+            var smallDiskQuadric = _openGl.NewQuadric();
+            _openGl.QuadricDrawStyle(smallDiskQuadric, OpenGL.GLU_FILL);
+            _openGl.Cylinder(smallDiskQuadric, 2, 1.5, 1, numSegments, numSegments);
+
+        }
+
+        public void DrawFillCircle(float cx, float cy, float cz, float r, int numSegments, Color color)
+        {
+            _openGl.Begin(OpenGL.GL_POLYGON);
+            _openGl.Color(color);
+            for (int ii = 0; ii < numSegments; ii++)
+            {
+                double theta = 2.0 * 3.1415926f * ii / numSegments;//get the current angle 
+                double x = r * Math.Cos(theta);//calculate the x component 
+                double y = r * Math.Sin(theta);//calculate the y component 
+                _openGl.Vertex(x + cx, y + cy, cz);//output vertex 
+            }
+            _openGl.End();
+        }
+
+        public void DrawText(string text)
+        {
+            using (Bitmap BmpImageT = new Bitmap(256, 256))
+            using (MemoryStream ms = new MemoryStream())
+            {
+                Graphics gr = Graphics.FromImage(BmpImageT);
+                gr.FillRectangle(Brushes.Black, 0, 0, 256, 256);
+                gr.DrawString(text, new Font("Arial", 20), Brushes.Red, 0, 0);
+                //BmpImageT.Save("Hello.bmp", ms);
+            }
+
+            TextureStruct Textures = new TextureStruct();
+            Textures.CoordX_YText = new double[4, 3]
+            { { 0, -0.1, 0 }, { 8, -0.1, 0 }, { 8, -0.1, 8 }, { 0, -0.1, 8 } };
+            Textures.X_YText = new double[4, 2] { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } };
+
+            Bitmap BmpImage = new Bitmap(new Bitmap("Hello.bmp"), 256, 256);
+            Rectangle rect = new Rectangle(0, 0, BmpImage.Width, BmpImage.Height);
+            BitmapData BmpData = BmpImage.LockBits(rect, ImageLockMode.ReadOnly,
+            BmpImage.PixelFormat);
+            _openGl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, (int)OpenGL.GL_RGBA,
+            BmpImage.Width, BmpImage.Height, 0, OpenGL.GL_BGRA,
+            OpenGL.GL_UNSIGNED_BYTE, BmpData.Scan0);
+            BmpImage.UnlockBits(BmpData);
+
+            _openGl.BindTexture(OpenGL.GL_TEXTURE_2D, Textures.TextureValue);
+
+            _openGl.TexParameter(OpenGL.GL_TEXTURE_2D,
+            OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
+            _openGl.TexParameter(OpenGL.GL_TEXTURE_2D,
+            OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
+
+            _openGl.Enable(OpenGL.GL_TEXTURE_2D); _openGl.Begin(OpenGL.GL_QUADS);
+            for (int i = 0; i < 4; i++)
+            {
+                _openGl.TexCoord(Textures.X_YText[i, 0], Textures.X_YText[i, 1]);
+                _openGl.Vertex(Textures.CoordX_YText[i, 0], Textures.CoordX_YText[i,
+                1], Textures.CoordX_YText[i, 2]);
+            }
+            _openGl.End(); _openGl.Disable(OpenGL.GL_TEXTURE_2D);
+        }
+
+        public struct TextureStruct
+        {
+            public uint TextureValue;
+            public double[,] X_YText;
+            public double[,] CoordX_YText;
         }
     }
 }
