@@ -3,18 +3,31 @@ using SharpGL.SceneGraph;
 using System;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 
 namespace ComputerGraphicsOpenGL
 {
+    public struct TextureStruct
+    {
+        public uint TextureValue;
+        public double[,] X_YText;
+        public double[,] CoordX_YText;
+    }
     public class Graphic
     {
         private readonly OpenGL _openGl;
+        private readonly float[] light0_diffuse3 = { 1f, 1f, 0f };
+        private readonly float[] light0_direction3 = { 8f, 8f, 8f, 1.0f };
 
         public Graphic(OpenGL openGl)
         {
-            if (openGl == null) return;
+            if (openGl == null)
+            {
+                return;
+            }
+
             _openGl = openGl;
+            _openGl.Light(OpenGL.GL_LIGHT5, OpenGL.GL_DIFFUSE, light0_diffuse3);
+            _openGl.Light(OpenGL.GL_LIGHT5, OpenGL.GL_POSITION, light0_direction3);
         }
 
         public void DrawAxes(Color clrXAxis, Color clrYAxis, Color clrZAxis)
@@ -48,10 +61,14 @@ namespace ComputerGraphicsOpenGL
 
         public void DrawPolygon(Color color, params Point3D[] points)
         {
-            if (points.Length == 0) return;
+            if (points.Length == 0)
+            {
+                return;
+            }
+
             _openGl.Begin(OpenGL.GL_POLYGON);
             _openGl.Color(color);
-            foreach (var point in points)
+            foreach (Point3D point in points)
             {
                 _openGl.Vertex(point.X, point.Y, point.Z);
             }
@@ -77,33 +94,37 @@ namespace ComputerGraphicsOpenGL
             _openGl.Rotate(0, -180, 0);
             DrawPartOfDumbbell(numSegments);
             _openGl.PopMatrix();
+        }
 
-            // Цвет лампы
-            float[] light0_diffuse3 = { 1f, 1f, 0f };
-            float[] light0_direction3 = { 4.0f, .0f, 4.0f, 1.0f };
+        public void TurnLight()
+        {
             _openGl.Enable(OpenGL.GL_LIGHTING);
             _openGl.Enable(OpenGL.GL_LIGHT5);
-            _openGl.Light(OpenGL.GL_LIGHT5, OpenGL.GL_DIFFUSE, light0_diffuse3);
-            _openGl.Light(OpenGL.GL_LIGHT5, OpenGL.GL_POSITION, light0_direction3);
+        }
+
+        public void TurnOffLight()
+        {
+            _openGl.Disable(OpenGL.GL_LIGHTING);
+            _openGl.Disable(OpenGL.GL_LIGHT5);
         }
 
         private void DrawPartOfDumbbell(int numSegments)
         {
-            var pipeQuadric = _openGl.NewQuadric();
+            IntPtr pipeQuadric = _openGl.NewQuadric();
             _openGl.QuadricDrawStyle(pipeQuadric, OpenGL.GLU_FILL);
             _openGl.Cylinder(pipeQuadric, 1, 1, 4, numSegments, numSegments);
-            _openGl.Translate(0,0,4);
-            var largeDiskQuadric = _openGl.NewQuadric();
+            _openGl.Translate(0, 0, 4);
+            IntPtr largeDiskQuadric = _openGl.NewQuadric();
             _openGl.QuadricDrawStyle(largeDiskQuadric, OpenGL.GLU_FILL);
             _openGl.Cylinder(largeDiskQuadric, 4, 3.5, 1, numSegments, numSegments);
 
             _openGl.Translate(0, 0, 1);
-            var mediumDiskQuadric = _openGl.NewQuadric();
+            IntPtr mediumDiskQuadric = _openGl.NewQuadric();
             _openGl.QuadricDrawStyle(mediumDiskQuadric, OpenGL.GLU_FILL);
             _openGl.Cylinder(mediumDiskQuadric, 3, 2.5, 1, numSegments, numSegments);
 
             _openGl.Translate(0, 0, 1);
-            var smallDiskQuadric = _openGl.NewQuadric();
+            IntPtr smallDiskQuadric = _openGl.NewQuadric();
             _openGl.QuadricDrawStyle(smallDiskQuadric, OpenGL.GLU_FILL);
             _openGl.Cylinder(smallDiskQuadric, 2, 1.5, 1, numSegments, numSegments);
 
@@ -123,53 +144,40 @@ namespace ComputerGraphicsOpenGL
             _openGl.End();
         }
 
-        public void DrawText(string text)
+        public void DrawTexture(string path)
         {
-            using (Bitmap BmpImageT = new Bitmap(256, 256))
-            using (MemoryStream ms = new MemoryStream())
+            TextureStruct Textures = new TextureStruct
             {
-                Graphics gr = Graphics.FromImage(BmpImageT);
-                gr.FillRectangle(Brushes.Black, 0, 0, 256, 256);
-                gr.DrawString(text, new Font("Arial", 20), Brushes.Red, 0, 0);
-                //BmpImageT.Save("Hello.bmp", ms);
-            }
-
-            TextureStruct Textures = new TextureStruct();
-            Textures.CoordX_YText = new double[4, 3]
-            { { 0, -0.1, 0 }, { 8, -0.1, 0 }, { 8, -0.1, 8 }, { 0, -0.1, 8 } };
-            Textures.X_YText = new double[4, 2] { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } };
-
-            Bitmap BmpImage = new Bitmap(new Bitmap("Hello.bmp"), 256, 256);
+                CoordX_YText = new double[4, 3] { { -8, 8, 4 }, { -8, 8, -4 }, { -8, 0, -4 }, { -8, 0, 4 } },
+                X_YText = new double[4, 2] { { 0, 0 }, { 1, 0 }, { 1, 1 }, { 0, 1 } }
+            };
+            Bitmap BmpImage = new Bitmap(new Bitmap(path), 256, 256);
             Rectangle rect = new Rectangle(0, 0, BmpImage.Width, BmpImage.Height);
-            BitmapData BmpData = BmpImage.LockBits(rect, ImageLockMode.ReadOnly,
-            BmpImage.PixelFormat);
-            _openGl.TexImage2D(OpenGL.GL_TEXTURE_2D, 0, (int)OpenGL.GL_RGBA,
-            BmpImage.Width, BmpImage.Height, 0, OpenGL.GL_BGRA,
-            OpenGL.GL_UNSIGNED_BYTE, BmpData.Scan0);
+            BitmapData BmpData = BmpImage.LockBits(rect, ImageLockMode.ReadOnly, BmpImage.PixelFormat);
+            _openGl.TexImage2D(
+                OpenGL.GL_TEXTURE_2D,
+                0,
+                (int)OpenGL.GL_RGBA,
+                BmpImage.Width,
+                BmpImage.Height,
+                0,
+                OpenGL.GL_BGRA,
+                OpenGL.GL_UNSIGNED_BYTE,
+                BmpData.Scan0
+            );
             BmpImage.UnlockBits(BmpData);
-
             _openGl.BindTexture(OpenGL.GL_TEXTURE_2D, Textures.TextureValue);
-
-            _openGl.TexParameter(OpenGL.GL_TEXTURE_2D,
-            OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
-            _openGl.TexParameter(OpenGL.GL_TEXTURE_2D,
-            OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
-
-            _openGl.Enable(OpenGL.GL_TEXTURE_2D); _openGl.Begin(OpenGL.GL_QUADS);
+            _openGl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MIN_FILTER, OpenGL.GL_LINEAR);
+            _openGl.TexParameter(OpenGL.GL_TEXTURE_2D, OpenGL.GL_TEXTURE_MAG_FILTER, OpenGL.GL_LINEAR);
+            _openGl.Enable(OpenGL.GL_TEXTURE_2D);
+            _openGl.Begin(OpenGL.GL_QUADS);
             for (int i = 0; i < 4; i++)
             {
                 _openGl.TexCoord(Textures.X_YText[i, 0], Textures.X_YText[i, 1]);
-                _openGl.Vertex(Textures.CoordX_YText[i, 0], Textures.CoordX_YText[i,
-                1], Textures.CoordX_YText[i, 2]);
+                _openGl.Vertex(Textures.CoordX_YText[i, 0], Textures.CoordX_YText[i, 1], Textures.CoordX_YText[i, 2]);
             }
-            _openGl.End(); _openGl.Disable(OpenGL.GL_TEXTURE_2D);
-        }
-
-        public struct TextureStruct
-        {
-            public uint TextureValue;
-            public double[,] X_YText;
-            public double[,] CoordX_YText;
+            _openGl.End();
+            _openGl.Disable(OpenGL.GL_TEXTURE_2D);
         }
     }
 }

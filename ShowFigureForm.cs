@@ -1,5 +1,4 @@
 ﻿using SharpGL;
-
 using System;
 using System.Drawing;
 using System.Windows.Forms;
@@ -11,11 +10,9 @@ namespace ComputerGraphicsOpenGL
         private readonly double _camR = 10;
         private readonly double _degToRads = 0.0174533;
         private readonly double _camAngleStep = 3.0;
-        private readonly double _xStep = 1;
 
         private readonly OpenGL _openGl;
         private readonly Graphic _graphic;
-        private readonly FigureGraphic _figure;
 
         private double _camAngle = 28;
         private double _camX;
@@ -26,19 +23,16 @@ namespace ComputerGraphicsOpenGL
             InitializeComponent();
             _openGl = openGLControlFigure.OpenGL;
             _graphic = new Graphic(_openGl);
-            _figure = new FigureGraphic(_graphic);
             _camZ = Math.Sin(_camAngle * _degToRads) * _camR;
             _camX = Math.Cos(_camAngle * _degToRads) * _camR;
+            _graphic.TurnLight();
         }
 
         private void OpenGLControlFigure_OnOpenGLDraw(object sender, RenderEventArgs args)
         {
-            _openGl.ClearColor(1f, 1, 1f, 1);
-            _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
             _graphic.DrawAxes(Color.Red, Color.Yellow, Color.Blue);
-            //_figure.Draw();
-            _graphic.DrawDumbbell(Color.Red,25);
-            _graphic.DrawText("test");
+            _graphic.DrawDumbbell(Color.Red, 25);
+            _graphic.DrawTexture("Text.bmp");
         }
 
         private void LoadCamSetting()
@@ -46,10 +40,11 @@ namespace ComputerGraphicsOpenGL
             _openGl.MatrixMode(OpenGL.GL_PROJECTION);
             _openGl.LoadIdentity();
             _openGl.Perspective(90, 16 / 9, 0.1, 200);
-
             _openGl.LookAt(_camX, 10, _camZ, 0, 0, 0, 0, 1, 0);
             _openGl.MatrixMode(OpenGL.GL_MODELVIEW);
             _openGl.LoadIdentity();
+            _openGl.ClearColor(1f, 1, 1f, 1);
+            _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
         }
 
         private void OpenGLControlFigure_OnLoad(object sender, EventArgs e)
@@ -65,13 +60,6 @@ namespace ComputerGraphicsOpenGL
             LoadCamSetting();
         }
 
-        private void MoveFigure(DirectionRotate direction)
-        {
-            _figure.X += _xStep * Convert.ToInt32(direction);
-            _openGl.ClearColor(0.1f, 1f, 0.3f, 1);
-            _openGl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
-        }
-
         private void OpenGLControlFigure_OnPreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
         {
             switch (e.KeyCode)
@@ -81,12 +69,6 @@ namespace ComputerGraphicsOpenGL
                     break;
                 case Keys.Left:
                     RotateCamera(DirectionRotate.LEFT);
-                    break;
-                case Keys.A:
-                    MoveFigure(DirectionRotate.LEFT);
-                    break;
-                case Keys.D:
-                    MoveFigure(DirectionRotate.RIGHT);
                     break;
             }
         }
